@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import config from "../config/config.js";
 
 
 export async function register(req, res) {
@@ -29,17 +30,39 @@ export async function register(req, res) {
         password: hashedPassword
     });
 
-    if (user) {
-        res.status(201).json({
-            success: true,
-            message: "User registered successfully",
-            user
-        });
-    } else {
-        res.status(500).json({
+    const token = jwt.sign(
+        {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+        },
+        config.JWT_SECRET,
+        {
+            expiresIn: "1d"
+        }
+    )
+
+    res.status(201).json({
+        message: "User registered successfully",
+        user: {
+            username: user.username,
+            email: user.email,
+        },
+        token
+    })
+
+}
+
+export async function getMe(req, res) {
+
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({
             success: false,
-            message: "Failed to register user"
-        });
+            message: "Unauthorized"
+        })
     }
+    const decodedToken = jwt.verify(token, config.JWT_SECRET);
+    console.log(decodedToken);
 
 }
