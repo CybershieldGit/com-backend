@@ -1,5 +1,8 @@
-import mongoose from 'mongoose';
-import config from './config.js';
+import dns from "dns";
+import mongoose from "mongoose";
+import config from "./config.js";
+
+dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
 
 async function connectDB() {
   try {
