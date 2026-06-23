@@ -14,7 +14,7 @@ export async function createProduct(req, res) {
             seo_description,
         } = req.body;
 
-        const existingProduct = await Product.findOne({ slug });
+        const existingProduct = await Product.findOne({ slug, user: req.user.id });
 
         if (existingProduct) {
             return res.status(409).json({
@@ -33,6 +33,7 @@ export async function createProduct(req, res) {
             featured,
             seo_title,
             seo_description,
+            user: req.user.id,
         });
 
         return res.status(201).json({
@@ -65,7 +66,7 @@ export async function getProducts(req, res) {
             limit = 20,
         } = req.query;
 
-        const filter = {};
+        const filter = { user: req.user.id };
 
         if (status) filter.status = status;
         if (featured !== undefined) filter.featured = featured === "true";
@@ -101,7 +102,10 @@ export async function getProducts(req, res) {
 
 export async function getProductById(req, res) {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findOne({
+            _id: req.params.id,
+            user: req.user.id,
+        });
 
         if (!product) {
             return res.status(404).json({
@@ -133,6 +137,7 @@ export async function getProductBySlug(req, res) {
     try {
         const product = await Product.findOne({
             slug: req.params.slug.toLowerCase(),
+            user: req.user.id,
         });
 
         if (!product) {
@@ -151,16 +156,17 @@ export async function getProductBySlug(req, res) {
             success: false,
             message: "Failed to fetch product",
         });
-    } 
+    }
 }
-
 
 export async function updateProduct(req, res) {
     try {
-        const { slug } = req.body;
+        const { slug, user, ...updates } = req.body;
+
         if (slug) {
             const duplicate = await Product.findOne({
                 slug,
+                user: req.user.id,
                 _id: { $ne: req.params.id },
             });
 
@@ -170,15 +176,14 @@ export async function updateProduct(req, res) {
                     message: "A product with this slug already exists",
                 });
             }
+
+            updates.slug = slug;
         }
 
-        const product = await Product.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { 
-                new: true, 
-                runValidators: true 
-            }
+        const product = await Product.findOneAndUpdate(
+            { _id: req.params.id, user: req.user.id },
+            updates,
+            { new: true, runValidators: true }
         );
 
         if (!product) {
@@ -217,7 +222,10 @@ export async function updateProduct(req, res) {
 
 export async function deleteProduct(req, res) {
     try {
-        const product = await Product.findByIdAndDelete(req.params.id);
+        const product = await Product.findOneAndDelete({
+            _id: req.params.id,
+            user: req.user.id,
+        });
 
         if (!product) {
             return res.status(404).json({
