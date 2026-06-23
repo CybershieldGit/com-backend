@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: [true, "User is required"],
+        },
         status: {
             type: String,
             enum: ["draft", "published", "archived"],
@@ -50,8 +55,8 @@ const productSchema = new mongoose.Schema(
     }
 );
 
-productSchema.index({ slug: 1 }, { unique: true });
-productSchema.index({ status: 1 });
+productSchema.index({ user: 1, slug: 1 }, { unique: true });
+productSchema.index({ user: 1, status: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 
