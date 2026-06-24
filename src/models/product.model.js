@@ -49,6 +49,20 @@ const productSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        price: {
+            type: Number,
+            required: [true, "Product price is required"],
+            min: [0.01, "Product price must be greater than zero"],
+        },
+        quantity: {
+            type: Number,
+            required: [true, "Product quantity is required"],
+            min: [1, "Product quantity must be at least 1"],
+            validate: {
+                validator: Number.isInteger,
+                message: "Product quantity must be an integer",
+            },
+        },
     },
     {
         timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

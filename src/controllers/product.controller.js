@@ -12,6 +12,8 @@ export async function createProduct(req, res) {
             featured,
             seo_title,
             seo_description,
+            price,
+            quantity,
         } = req.body;
 
         const existingProduct = await Product.findOne({ slug, user: req.user.id });
@@ -33,6 +35,8 @@ export async function createProduct(req, res) {
             featured,
             seo_title,
             seo_description,
+            price,
+            quantity,
             user: req.user.id,
         });
 
